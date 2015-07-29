@@ -39,34 +39,22 @@ display.header = function (str) {
  * @return {Promise} resolves to a string - the project's name
  */
 var getProjectName = function () {
-    console.log('yo yo yo');
-    try {
-
     var deferred = Q.defer();
     var parser = new xml2js.Parser();
     data = fs.readFile(settings.CONFIG_FILE, function (err, data) {
-        console.log('readFile yo yo');
         if (err) {
-            console.log('err', err);
             deferred.reject(err);
         }
-        console.log('parseString yo yo');
         parser.parseString(data, function (err, result) {
             if (err) {
-                console.log('err', err);
                 deferred.reject(err);
             }
             var projectName = result.widget.name[0];
-            console.log('projectName yo yo', projectName);
             deferred.resolve(projectName);
         });
     });
     return deferred.promise;
-    } catch (error) {
-        console.log('oops', error);
-    }
-
-    };
+};
 
 /**
  * Resizes and creates a new icon in the platform's folder.
@@ -76,8 +64,6 @@ var getProjectName = function () {
  * @return {Promise}
  */
 var generateIcon = function (platform, image) {
-    try {
-        console.log('generateIcon yo yo', platform, image);
     var deferred = Q.defer();
     var imageProp = {
         dstPath: platform.iconsPath + image.name,
@@ -86,7 +72,7 @@ var generateIcon = function (platform, image) {
         width: image.width,
         height: image.height,
     };
-    
+
     if(platform.type == 'Icons'){
         imageProp.srcPath = settings.ICON_FILE;
         resizeImage();
@@ -101,12 +87,8 @@ var generateIcon = function (platform, image) {
     }
 
     function resizeImage(){
-
-        console.log('resizeImage', imageProp);
         ig.resize(imageProp, function(err, stdout, stderr){
-            console.log('err, stdout, stderr', err, stdout, stderr);
             if (err) {
-                console.log('err yo yo', err);
                 deferred.reject(err);
             } else {
                 deferred.resolve();
@@ -116,7 +98,6 @@ var generateIcon = function (platform, image) {
     }
 
     function cropImage(){
-        console.log('cropImage');
         ig.crop(imageProp, function(err, stdout, stderr){
             if (err) {
                 deferred.reject(err);
@@ -129,10 +110,6 @@ var generateIcon = function (platform, image) {
 
 
     return deferred.promise;
-    } catch (error) {
-        console.log('an error', error);
-    }
-
 };
 
 /**
@@ -142,11 +119,10 @@ var generateIcon = function (platform, image) {
  * @return {Promise}
  */
 var generateIconsForPlatform = function (platform) {
-    console.log('generateIconsForPlatform');
     var deferred = Q.defer();
     display.header('Generating ' + platform.type + ' for ' + platform.name);
     var all = [];
-    
+
     if (platform.icons) {
         platform.icons.forEach(function (icon) {
             all.push(generateIcon(platform, icon));
@@ -167,12 +143,11 @@ var generateIconsForPlatform = function (platform) {
 
 /**
  * Goes over all the platforms and triggers icon generation
- * 
+ *
  * @param  {Array} platforms
  * @return {Promise}
  */
 var generateIcons = function (platforms) {
-    console.log('generateIcons', platforms);
     var deferred = Q.defer();
     var sequence = Q();
     var all = [];
@@ -194,7 +169,6 @@ var generateIcons = function (platforms) {
  * @return {Promise} resolves if at least one platform was found, rejects otherwise
  */
 var atLeastOnePlatformFound = function () {
-    console.log('atLeastOnePlatformFound');
     var deferred = Q.defer();
     getPlatformsFromConfig().then(function (platforms) {
         var activePlatforms = _(platforms).where({ isAdded : true });
@@ -215,10 +189,9 @@ var atLeastOnePlatformFound = function () {
  * @return {Promise} resolves if exists, rejects otherwise
  */
 var validImagesExist = function () {
-    console.log('validImagesExist');
     var deferred = Q.defer();
     var all = []
-    
+
     all.push(checkImage(settings.ICON_FILE));
     all.push(checkImage(settings.SPLASH_FILE_PORTRAIT));
     all.push(checkImage(settings.SPLASH_FILE_LANDSCAPE));
@@ -236,7 +209,6 @@ var validImagesExist = function () {
  * @return {Promise} resolves if exists, rejects otherwise
  */
 var checkImage = function (file) {
-    console.log('checkImage');
     var deferred = Q.defer();
     fs.exists(file, function (exists) {
         if (exists) {
@@ -256,7 +228,6 @@ var checkImage = function (file) {
  * @return {Promise} resolves if exists, rejects otherwise
  */
 var configFileExists = function () {
-    console.log('configFileExists');
     var deferred = Q.defer();
     fs.exists(settings.CONFIG_FILE, function (exists) {
         if (exists) {
@@ -277,7 +248,6 @@ var configFileExists = function () {
  * @return {Promise} resolves with an array of platforms
  */
 var getPlatformsFromConfig = function (projectName) {
-    console.log('getPlatformsFromConfig', projectName);
     var deferred = Q.defer();
     var parser = new xml2js.Parser();
     var platforms = [];
@@ -296,7 +266,7 @@ var getPlatformsFromConfig = function (projectName) {
                         }
                     });
                 });
-            });            
+            });
         });
     });
 
@@ -312,7 +282,6 @@ var getPlatformsFromConfig = function (projectName) {
  * @return {Function} function with platforms array
  */
 var getIcons = function (node, platforms, cb) {
-    console.log('getIcons');
     var platform = {};
 
     fs.mkdir('res/' + node.$.name, function(err){
@@ -320,7 +289,7 @@ var getIcons = function (node, platforms, cb) {
         platform.name = node.$.name;
         platform.iconsPath = '';
         platform.isAdded = fs.existsSync('platforms/' + node.$.name),
-        platform.icons = [];
+            platform.icons = [];
         platform.type = 'Icons';
 
         if(node.icon){
@@ -344,7 +313,6 @@ var getIcons = function (node, platforms, cb) {
  * @return {Function} function with platforms array
  */
 var getSplash = function (node, platforms, cb) {
-    console.log('getSplash');
     var platform = {};
 
     fs.mkdir('res/screen', function(err){
@@ -353,7 +321,7 @@ var getSplash = function (node, platforms, cb) {
             platform.name = node.$.name;
             platform.iconsPath = '';
             platform.isAdded = fs.existsSync('platforms/' + node.$.name),
-            platform.splashes = [];
+                platform.splashes = [];
             platform.type = 'Splashes';
 
             if(node.splash){
